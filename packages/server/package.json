@@ -1,0 +1,23 @@
+{
+  "name": "@collab-space/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.700.0",
+    "ws": "^8.18.0",
+    "y-websocket": "^2.0.4",
+    "yjs": "^13.6.21"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.0",
+    "typescript": "~5.6.2"
+  }
+}
