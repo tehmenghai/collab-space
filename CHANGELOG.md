@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-02-27
+
+### Added
+- ECS Fargate deployment with ALB for production hosting
+- CloudFormation template (ECR, ECS cluster, task definition, ALB, IAM roles)
+- GitHub Actions CI/CD workflow (build, push to ECR, deploy to ECS)
+- Multi-stage Dockerfile bundling frontend static files into server container
+- Server serves frontend static files at `/collab/` with SPA fallback
+- WebSocket `/ws/` path stripping for ALB-compatible routing
+- Auto-detect `ws://` vs `wss://` protocol for WebSocket connections
+
+### Removed
+- Old server-only Dockerfile (replaced by root multi-stage Dockerfile)
+
 ## [1.0.0] - 2026-02-26
 
 ### Added

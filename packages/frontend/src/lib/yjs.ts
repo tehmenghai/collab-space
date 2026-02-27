@@ -3,8 +3,9 @@ import { WebsocketProvider } from "y-websocket";
 import { getRandomColor } from "./colors";
 import { getRandomName } from "./names";
 
+const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 const WS_URL =
-  import.meta.env.VITE_WS_URL || `ws://${window.location.host}/ws`;
+  import.meta.env.VITE_WS_URL || `${wsProtocol}//${window.location.host}/ws`;
 
 const USER_KEY = "collab-space-user";
 

@@ -1,4 +1,7 @@
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import {
   S3Client,
@@ -13,10 +16,26 @@ import * as Y from "yjs";
 // @ts-expect-error — no type declarations
 import { setupWSConnection, setPersistence, docs } from "y-websocket/bin/utils";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PUBLIC_DIR = path.join(__dirname, "..", "public");
+
 const PORT = parseInt(process.env.PORT || "4444", 10);
 const BUCKET = process.env.S3_BUCKET || "mhteh-my-work-space";
 const S3_PREFIX = "collab-docs/";
 const REGION = process.env.AWS_REGION || "ap-southeast-1";
+
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+};
 
 const s3 = new S3Client({ region: REGION });
 
@@ -166,8 +185,32 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  res.writeHead(200);
-  res.end("Collab Space WebSocket Server");
+  // Serve static frontend files at /collab/
+  if (req.method === "GET" && req.url?.startsWith("/collab")) {
+    const urlPath = req.url.split("?")[0];
+    const relativePath = urlPath.replace(/^\/collab\/?/, "");
+    let filePath = path.join(PUBLIC_DIR, relativePath);
+
+    // Try to serve the exact file
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath);
+      const contentType = MIME_TYPES[ext] || "application/octet-stream";
+      res.writeHead(200, { "Content-Type": contentType });
+      fs.createReadStream(filePath).pipe(res);
+      return;
+    }
+
+    // SPA fallback: serve index.html for any /collab/* route
+    const indexPath = path.join(PUBLIC_DIR, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.writeHead(200, { "Content-Type": "text/html" });
+      fs.createReadStream(indexPath).pipe(res);
+      return;
+    }
+  }
+
+  res.writeHead(404);
+  res.end("Not Found");
 });
 
 // --- WebSocket ---
@@ -175,6 +218,10 @@ const server = http.createServer(async (req, res) => {
 const wss = new WebSocketServer({ noServer: true });
 
 server.on("upgrade", (request, socket, head) => {
+  // Strip /ws/ prefix so y-websocket receives the doc ID as the room name
+  if (request.url?.startsWith("/ws/")) {
+    request.url = "/" + request.url.slice(4);
+  }
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit("connection", ws, request);
   });
