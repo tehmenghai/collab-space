@@ -53,7 +53,8 @@ jobs:
           NEW_TASK_DEF=$(echo "$NEW_TASK_DEF" | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
 
           # Register new task definition
-          NEW_TASK_ARN=$(echo "$NEW_TASK_DEF" | aws ecs register-task-definition --cli-input-json file:///dev/stdin --query taskDefinition.taskDefinitionArn --output text)
+          echo "$NEW_TASK_DEF" > /tmp/task-def.json
+          NEW_TASK_ARN=$(aws ecs register-task-definition --cli-input-json file:///tmp/task-def.json --query taskDefinition.taskDefinitionArn --output text)
 
           # Update the service
           aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $NEW_TASK_ARN --force-new-deployment
