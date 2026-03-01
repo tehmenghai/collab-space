@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.4] - 2026-03-01
+
+### Fixed
+- Document title not loading on re-open — switched from meta map observer to ydoc-level update listener which reliably fires on WebSocket sync
+
 ## [1.1.3] - 2026-03-01
 
 ### Fixed
