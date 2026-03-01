@@ -237,7 +237,7 @@ export function Home() {
                         textOverflow: "ellipsis",
                       }}
                     >
-                      {doc.title || "Untitled"}
+                      {doc.title ?? "Untitled"}
                     </div>
                     <div
                       style={{

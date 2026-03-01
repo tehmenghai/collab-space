@@ -19,7 +19,7 @@ export function Toolbar({ docId, users, title }: ToolbarProps) {
   };
 
   const displayTitle =
-    title && title !== "Untitled" ? title : `${docId.slice(0, 8)}...`;
+    title != null && title !== "" ? title : `${docId.slice(0, 8)}...`;
 
   return (
     <div

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.2] - 2026-03-01
+
+### Fixed
+- Renamed document title not reflected in toolbar breadcrumb and home page list (falsy empty string checks)
+- `/api/docs` endpoint now reads title from live in-memory doc instead of stale S3 data
+
 ## [1.1.1] - 2026-03-01
 
 ### Fixed

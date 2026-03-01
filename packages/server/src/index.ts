@@ -133,12 +133,18 @@ const server = http.createServer(async (req, res) => {
 
         let title: string | null = null;
         try {
-          const data = await loadFromS3(id);
-          if (data) {
-            const tempDoc = new Y.Doc();
-            Y.applyUpdate(tempDoc, data);
-            title = tempDoc.getMap("meta").get("title") as string | undefined ?? null;
-            tempDoc.destroy();
+          // Prefer live in-memory doc (has unsaved changes) over S3
+          const liveDoc = docs.get(id);
+          if (liveDoc) {
+            title = liveDoc.getMap("meta").get("title") as string | undefined ?? null;
+          } else {
+            const data = await loadFromS3(id);
+            if (data) {
+              const tempDoc = new Y.Doc();
+              Y.applyUpdate(tempDoc, data);
+              title = tempDoc.getMap("meta").get("title") as string | undefined ?? null;
+              tempDoc.destroy();
+            }
           }
         } catch {
           // skip title extraction on error
