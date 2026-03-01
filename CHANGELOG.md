@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.5] - 2026-03-01
+
+### Fixed
+- Root cause fix: dual Yjs instance causing meta map corruption — server ESM `import` and y-websocket CJS `require` loaded separate Yjs copies, causing title data to be lost during sync/persistence. Now both use CJS via `createRequire` to share one Yjs instance
+
 ## [1.1.4] - 2026-03-01
 
 ### Fixed

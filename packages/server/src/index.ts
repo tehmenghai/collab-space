@@ -2,6 +2,7 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import { WebSocketServer } from "ws";
 import {
   S3Client,
@@ -10,11 +11,20 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
-import * as Y from "yjs";
+
+import type { Doc } from "yjs";
+
+// Use createRequire to load yjs via CJS — same instance as y-websocket
+// This avoids the "Yjs was already imported" dual-instance bug
+const require = createRequire(import.meta.url);
+const Y = require("yjs") as typeof import("yjs");
 
 // y-websocket/bin/utils handles Yjs doc management, persistence, and sync
-// @ts-expect-error — no type declarations
-import { setupWSConnection, setPersistence, docs } from "y-websocket/bin/utils";
+const { setupWSConnection, setPersistence, docs } = require("y-websocket/bin/utils") as {
+  setupWSConnection: (conn: import("ws").WebSocket, req: http.IncomingMessage) => void;
+  setPersistence: (persistence: { provider: null; bindState: (docName: string, ydoc: import("yjs").Doc) => Promise<void>; writeState: (docName: string, ydoc: import("yjs").Doc) => Promise<void> }) => void;
+  docs: Map<string, import("yjs").Doc>;
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
@@ -56,7 +66,7 @@ async function loadFromS3(docName: string): Promise<Uint8Array | null> {
   }
 }
 
-async function saveToS3(docName: string, ydoc: Y.Doc): Promise<void> {
+async function saveToS3(docName: string, ydoc: Doc): Promise<void> {
   const update = Y.encodeStateAsUpdate(ydoc);
   await s3.send(
     new PutObjectCommand({
@@ -79,7 +89,7 @@ delete process.env.YPERSISTENCE;
 
 setPersistence({
   provider: null,
-  bindState: async (docName: string, ydoc: Y.Doc) => {
+  bindState: async (docName: string, ydoc: Doc) => {
     const stored = await loadFromS3(docName);
     if (stored) {
       Y.applyUpdate(ydoc, stored);
@@ -95,7 +105,7 @@ setPersistence({
       }, 2000);
     });
   },
-  writeState: async (docName: string, ydoc: Y.Doc) => {
+  writeState: async (docName: string, ydoc: Doc) => {
     await saveToS3(docName, ydoc);
   },
 });
