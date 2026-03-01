@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-03-01
+
+### Fixed
+- Document title could not be renamed — clearing the name snapped back to "Untitled" due to falsy empty string check (`||` → `??`)
+
 ## [1.1.0] - 2026-02-27
 
 ### Added

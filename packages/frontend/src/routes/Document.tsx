@@ -17,7 +17,7 @@ export function Document() {
 
     const updateTitle = () => {
       const t = meta.get("title") as string | undefined;
-      setTitle(t || "Untitled");
+      setTitle(t ?? "Untitled");
     };
 
     updateTitle();
