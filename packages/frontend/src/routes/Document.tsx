@@ -22,8 +22,11 @@ export function Document() {
 
     updateTitle();
     meta.observe(updateTitle);
+    // Re-read title after initial sync completes (server → client)
+    yjsState.provider.on("sync", updateTitle);
     return () => {
       meta.unobserve(updateTitle);
+      yjsState.provider.off("sync", updateTitle);
     };
   }, [yjsState]);
 
