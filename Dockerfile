@@ -13,6 +13,7 @@ RUN npm ci
 # Copy source code
 COPY packages/frontend/ packages/frontend/
 COPY packages/server/ packages/server/
+COPY CHANGELOG.md ./
 
 # Build frontend and server
 RUN npm run build
@@ -36,7 +37,7 @@ COPY --from=build /app/packages/frontend/dist ./public/
 
 # Copy version and changelog for /api/version and /api/changelog
 COPY --from=build /app/package.json ./package.json
-COPY CHANGELOG.md ./CHANGELOG.md
+COPY --from=build /app/CHANGELOG.md ./CHANGELOG.md
 
 ENV PORT=4444
 ENV NODE_ENV=production
