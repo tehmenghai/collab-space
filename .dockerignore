@@ -4,3 +4,4 @@ packages/*/dist
 .git
 .github
 *.md
+!CHANGELOG.md
