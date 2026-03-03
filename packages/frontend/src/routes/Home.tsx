@@ -99,17 +99,29 @@ export function Home() {
           }}
         >
           Collab Space
-          <span
+          <a
+            href="https://github.com/tehmenghai/collab-space/blob/main/CHANGELOG.md"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               fontSize: "0.75rem",
               fontWeight: 500,
               color: "#98a2b3",
               marginLeft: 8,
               verticalAlign: "middle",
+              textDecoration: "none",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#2563eb";
+              e.currentTarget.style.textDecoration = "underline";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#98a2b3";
+              e.currentTarget.style.textDecoration = "none";
             }}
           >
             v1.2.1
-          </span>
+          </a>
         </h1>
         <p
           style={{
