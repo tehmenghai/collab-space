@@ -11,6 +11,8 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import crypto from "node:crypto";
 
 import type { Doc } from "yjs";
 
@@ -114,7 +116,7 @@ setPersistence({
 
 const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
@@ -173,6 +175,61 @@ const server = http.createServer(async (req, res) => {
       console.error("Failed to list docs:", err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Failed to list documents" }));
+    }
+    return;
+  }
+
+  // POST /api/upload — returns presigned PUT URL for image upload
+  if (req.method === "POST" && req.url === "/api/upload") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => { body += chunk.toString(); });
+    req.on("end", async () => {
+      try {
+        const { filename, contentType } = JSON.parse(body);
+        if (!filename || !contentType) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "filename and contentType required" }));
+          return;
+        }
+        const key = `collab-images/${crypto.randomUUID()}-${filename}`;
+        const uploadUrl = await getSignedUrl(
+          s3,
+          new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType }),
+          { expiresIn: 300 }
+        );
+        const imageUrl = `/api/image/${encodeURIComponent(key)}`;
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ uploadUrl, imageUrl }));
+      } catch (err) {
+        console.error("Upload endpoint error:", err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Failed to generate upload URL" }));
+      }
+    });
+    return;
+  }
+
+  // GET /api/image/:key — redirects to presigned GET URL for viewing images
+  const imageMatch = req.method === "GET" && req.url?.match(/^\/api\/image\/(.+)$/);
+  if (imageMatch) {
+    try {
+      const key = decodeURIComponent(imageMatch[1]);
+      if (!key.startsWith("collab-images/")) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Forbidden" }));
+        return;
+      }
+      const url = await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: BUCKET, Key: key }),
+        { expiresIn: 3600 }
+      );
+      res.writeHead(302, { Location: url });
+      res.end();
+    } catch (err) {
+      console.error("Image proxy error:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Failed to generate image URL" }));
     }
     return;
   }

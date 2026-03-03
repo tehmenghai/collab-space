@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-03-03
+
+### Added
+- Image paste and drag-and-drop support in the editor — uploads to S3 via presigned URLs
+- `POST /api/upload` endpoint for generating presigned S3 PUT URLs for image uploads
+- `GET /api/image/:key` proxy endpoint that redirects to fresh presigned GET URLs (images never expire)
+
+### Fixed
+- Text copy not working in editor — added CSS override to ensure `user-select: text` on contenteditable elements
+
 ## [1.1.5] - 2026-03-01
 
 ### Fixed

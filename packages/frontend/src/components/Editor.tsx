@@ -13,6 +13,21 @@ interface EditorProps {
 
 export function Editor({ ydoc, provider }: EditorProps) {
   const editor = useCreateBlockNote({
+    uploadFile: async (file: File) => {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      });
+      if (!res.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, imageUrl } = await res.json();
+      await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+      return imageUrl;
+    },
     collaboration: {
       provider,
       fragment: ydoc.getXmlFragment("document"),
@@ -23,5 +38,15 @@ export function Editor({ ydoc, provider }: EditorProps) {
     },
   });
 
-  return <BlockNoteView editor={editor} theme="light" />;
+  return (
+    <>
+      <style>{`
+        .bn-editor [contenteditable] {
+          user-select: text;
+          -webkit-user-select: text;
+        }
+      `}</style>
+      <BlockNoteView editor={editor} theme="light" />
+    </>
+  );
 }
