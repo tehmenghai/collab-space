@@ -99,6 +99,17 @@ export function Home() {
           }}
         >
           Collab Space
+          <span
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              color: "#98a2b3",
+              marginLeft: 8,
+              verticalAlign: "middle",
+            }}
+          >
+            v1.2.1
+          </span>
         </h1>
         <p
           style={{

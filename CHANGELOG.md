@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-03-03
+
+### Fixed
+- Text copy not working — pinned prosemirror-view to 1.37.2 (v1.38.0+ removed `__serializeForClipboard` used by BlockNote 0.22)
+
+### Added
+- Version label on the home page
+
 ## [1.2.0] - 2026-03-03
 
 ### Added
