@@ -34,6 +34,10 @@ COPY --from=build /app/packages/server/dist ./dist/
 # Copy frontend build output into public/ for static serving
 COPY --from=build /app/packages/frontend/dist ./public/
 
+# Copy version and changelog for /api/version and /api/changelog
+COPY --from=build /app/package.json ./package.json
+COPY CHANGELOG.md ./CHANGELOG.md
+
 ENV PORT=4444
 ENV NODE_ENV=production
 

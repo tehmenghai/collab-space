@@ -31,6 +31,23 @@ const { setupWSConnection, setPersistence, docs } = require("y-websocket/bin/uti
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
 
+// Find project root (where workspace package.json lives)
+function findProjectRoot(): string {
+  let dir = __dirname;
+  for (let i = 0; i < 5; i++) {
+    const pkgPath = path.join(dir, "package.json");
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+        if (pkg.name === "collab-space") return dir;
+      } catch { /* skip */ }
+    }
+    dir = path.dirname(dir);
+  }
+  return path.join(__dirname, "..");
+}
+const PROJECT_ROOT = findProjectRoot();
+
 const PORT = parseInt(process.env.PORT || "4444", 10);
 const BUCKET = process.env.S3_BUCKET || "mhteh-my-work-space";
 const S3_PREFIX = "collab-docs/";
@@ -122,6 +139,35 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") {
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  // GET /api/version
+  if (req.method === "GET" && req.url === "/api/version") {
+    try {
+      const pkg = JSON.parse(
+        fs.readFileSync(path.join(PROJECT_ROOT, "package.json"), "utf-8")
+      );
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ version: pkg.version }));
+    } catch {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ version: "unknown" }));
+    }
+    return;
+  }
+
+  // GET /api/changelog
+  if (req.method === "GET" && req.url === "/api/changelog") {
+    const file = path.join(PROJECT_ROOT, "CHANGELOG.md");
+    try {
+      const md = fs.readFileSync(file, "utf-8");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ changelog: md }));
+    } catch {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ changelog: "No changelog available." }));
+    }
     return;
   }
 

@@ -1,6 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import { nanoid } from "nanoid";
 import { useEffect, useState } from "react";
+import { ChangelogModal } from "../components/ChangelogModal";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -15,9 +16,15 @@ export function Home() {
   const [docs, setDocs] = useState<DocInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [version, setVersion] = useState<string | null>(null);
+  const [showChangelog, setShowChangelog] = useState(false);
 
   useEffect(() => {
     fetchDocs();
+    fetch(`${API_BASE}/api/version`)
+      .then((r) => r.json())
+      .then((d) => setVersion(d.version))
+      .catch(() => {});
   }, []);
 
   async function fetchDocs() {
@@ -99,29 +106,41 @@ export function Home() {
           }}
         >
           Collab Space
-          <a
-            href="https://github.com/tehmenghai/collab-space/blob/main/CHANGELOG.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 500,
-              color: "#98a2b3",
-              marginLeft: 8,
-              verticalAlign: "middle",
-              textDecoration: "none",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#2563eb";
-              e.currentTarget.style.textDecoration = "underline";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#98a2b3";
-              e.currentTarget.style.textDecoration = "none";
-            }}
-          >
-            v1.2.1
-          </a>
+          {version && (
+            <span
+              onClick={() => setShowChangelog(true)}
+              title="View changelog"
+              style={{
+                display: "inline-block",
+                background: "#f5f7fa",
+                border: "1px solid #e5e7eb",
+                borderRadius: 4,
+                padding: "0.15rem 0.45rem",
+                fontFamily:
+                  'ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace',
+                fontSize: "0.65rem",
+                fontWeight: 500,
+                color: "#98a2b3",
+                marginLeft: 8,
+                verticalAlign: "middle",
+                cursor: "pointer",
+                letterSpacing: "0.02em",
+                transition: "background 150ms ease, border-color 150ms ease, color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#eff6ff";
+                e.currentTarget.style.borderColor = "#2563eb";
+                e.currentTarget.style.color = "#2563eb";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#f5f7fa";
+                e.currentTarget.style.borderColor = "#e5e7eb";
+                e.currentTarget.style.color = "#98a2b3";
+              }}
+            >
+              v{version}
+            </span>
+          )}
         </h1>
         <p
           style={{
@@ -346,6 +365,9 @@ export function Home() {
           </div>
         )}
       </div>
+      {showChangelog && (
+        <ChangelogModal onClose={() => setShowChangelog(false)} />
+      )}
     </div>
   );
 }
