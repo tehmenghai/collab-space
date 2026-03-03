@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-03-03
+
+### Added
+- Multi-column layout support — type `/columns` in the slash menu or drag blocks to the side of another block to arrange content side by side
+- Integrated `@blocknote/xl-multi-column` package with custom schema, drop cursor, locales, and slash menu items
+
 ## [1.2.2] - 2026-03-03
 
 ### Added

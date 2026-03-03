@@ -1,10 +1,21 @@
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 
+import { BlockNoteSchema, locales } from "@blocknote/core";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
+import {
+  withMultiColumn,
+  multiColumnDropCursor,
+  locales as multiColumnLocales,
+  getMultiColumnSlashMenuItems,
+} from "@blocknote/xl-multi-column";
+import { SuggestionMenuController, getDefaultReactSlashMenuItems } from "@blocknote/react";
 import * as Y from "yjs";
 import type { WebsocketProvider } from "y-websocket";
+import { useMemo } from "react";
+
+const schema = withMultiColumn(BlockNoteSchema.create());
 
 interface EditorProps {
   ydoc: Y.Doc;
@@ -13,6 +24,12 @@ interface EditorProps {
 
 export function Editor({ ydoc, provider }: EditorProps) {
   const editor = useCreateBlockNote({
+    schema,
+    dropCursor: multiColumnDropCursor,
+    dictionary: {
+      ...locales.en,
+      multi_column: multiColumnLocales.en,
+    } as any,
     uploadFile: async (file: File) => {
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -38,6 +55,16 @@ export function Editor({ ydoc, provider }: EditorProps) {
     },
   });
 
+  const slashMenuItems = useMemo(() => {
+    return async (query: string) =>
+      [
+        ...getDefaultReactSlashMenuItems(editor),
+        ...getMultiColumnSlashMenuItems(editor),
+      ].filter((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase())
+      );
+  }, [editor]);
+
   return (
     <>
       <style>{`
@@ -46,7 +73,12 @@ export function Editor({ ydoc, provider }: EditorProps) {
           -webkit-user-select: text;
         }
       `}</style>
-      <BlockNoteView editor={editor} theme="light" />
+      <BlockNoteView editor={editor} theme="light" slashMenu={false}>
+        <SuggestionMenuController
+          triggerCharacter="/"
+          getItems={slashMenuItems}
+        />
+      </BlockNoteView>
     </>
   );
 }
